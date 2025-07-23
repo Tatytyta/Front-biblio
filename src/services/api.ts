@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3001/auth';
 
 export const api = {
   auth: {
-    login: async (data: { email: string; password: string }) => {
+    login: async (data: { username: string; password: string }) => {
       const res = await axios.post(`${API_URL}/login`, data);
       return res.data.data;
     },

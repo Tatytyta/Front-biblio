@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Si no es usuario de prueba, intentar con backend real
       const loginData = {
-        email: credentials.username, // El campo username del frontend se mapea a email del backend
+        username: credentials.username, // El campo username del frontend se mapea a email del backend
         password: credentials.password
       };
       

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ const Login: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.auth.login({ email, password });
+      const res = await api.auth.login({ username, password });
       console.log('🟢 Login response:', res);
 
       if (res && res.access_token) {
@@ -45,10 +45,10 @@ const Login: React.FC = () => {
     <form onSubmit={handleSubmit} style={{ maxWidth: 400, margin: '2rem auto', textAlign: 'center' }}>
       <h2>Iniciar Sesión</h2>
       <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
+        type="text"
+        placeholder="Usuario"
+        value={username}
+        onChange={e => setUsername(e.target.value)}
         required
         style={{ marginBottom: 10, width: '100%', padding: 8 }}
       />
