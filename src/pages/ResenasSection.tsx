@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { resenasService } from '../services/api';
 
-interface Resena { id: string; libro: string; usuario: string; texto: string; }
+interface Resena {
+  id: string;
+  idLibro: number;
+  idUsuario: number;
+  comentario: string;
+  calificacion?: number;
+}
 
 const ResenasSection: React.FC = () => {
   const [resenas, setResenas] = useState<Resena[]>([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ libro: '', usuario: '', texto: '' });
+  const [form, setForm] = useState({
+    idLibro: '',
+    idUsuario: '',
+    comentario: '',
+    calificacion: '5',
+  });
   const [editId, setEditId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -16,20 +27,10 @@ const ResenasSection: React.FC = () => {
     setError('');
     try {
       const response = await resenasService.getResenas();
-      let resenasArray = [];
-      if (Array.isArray(response)) {
-        resenasArray = response;
-      } else if (response?.data?.items && Array.isArray(response.data.items)) {
-        resenasArray = response.data.items;
-      } else if (Array.isArray(response?.data)) {
-        resenasArray = response.data;
-      } else if (Array.isArray(response?.items)) {
-        resenasArray = response.items;
-      } else if (Array.isArray(response?.resenas)) {
-        resenasArray = response.resenas;
-      }
-      setResenas(resenasArray);
-    } catch {
+      const items = response?.data?.items || [];
+      setResenas(items);
+    } catch (e) {
+      console.error(e);
       setResenas([]);
       setError('Error al cargar reseñas');
     } finally {
@@ -37,7 +38,9 @@ const ResenasSection: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchResenas(); }, []);
+  useEffect(() => {
+    fetchResenas();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +48,22 @@ const ResenasSection: React.FC = () => {
     setError('');
     setSuccess('');
     try {
+      const resenaData = {
+        idLibro: parseInt(form.idLibro),
+        idUsuario: parseInt(form.idUsuario),
+        comentario: form.comentario,
+        calificacion: parseInt(form.calificacion),
+      };
+
       if (editId) {
-        await resenasService.updateResena(editId, form);
+        await resenasService.updateResena(editId, resenaData);
         setSuccess('Reseña actualizada con éxito');
       } else {
-        await resenasService.createResena(form);
+        await resenasService.createResena(resenaData);
         setSuccess('Reseña agregada con éxito');
       }
-      setForm({ libro: '', usuario: '', texto: '' });
+
+      setForm({ idLibro: '', idUsuario: '', comentario: '', calificacion: '5' });
       setEditId(null);
       fetchResenas();
     } catch {
@@ -78,45 +89,64 @@ const ResenasSection: React.FC = () => {
   };
 
   const handleEdit = (r: Resena) => {
-    setForm({ libro: r.libro, usuario: r.usuario, texto: r.texto });
+    setForm({
+      idLibro: r.idLibro.toString(),
+      idUsuario: r.idUsuario.toString(),
+      comentario: r.comentario,
+      calificacion: r.calificacion?.toString() || '5',
+    });
     setEditId(r.id);
   };
 
   return (
     <div style={{ padding: 24 }}>
       <h2 style={{ fontSize: 24, marginBottom: 16 }}>Reseñas</h2>
+
       <form onSubmit={handleSubmit} style={{ marginBottom: 24, display: 'flex', gap: 8 }}>
-        <input placeholder="Libro" value={form.libro} onChange={ev => setForm(f => ({ ...f, libro: ev.target.value }))} required />
-        <input placeholder="Usuario" value={form.usuario} onChange={ev => setForm(f => ({ ...f, usuario: ev.target.value }))} required />
-        <input placeholder="Texto" value={form.texto} onChange={ev => setForm(f => ({ ...f, texto: ev.target.value }))} required />
+        <input placeholder="ID Libro" value={form.idLibro} onChange={ev => setForm(f => ({ ...f, idLibro: ev.target.value }))} required />
+        <input placeholder="ID Usuario" value={form.idUsuario} onChange={ev => setForm(f => ({ ...f, idUsuario: ev.target.value }))} required />
+        <input placeholder="Comentario" value={form.comentario} onChange={ev => setForm(f => ({ ...f, comentario: ev.target.value }))} required />
+        <input type="number" min={1} max={5} placeholder="Calificación" value={form.calificacion} onChange={ev => setForm(f => ({ ...f, calificacion: ev.target.value }))} required />
         <button type="submit" disabled={loading}>{editId ? 'Actualizar' : 'Agregar'}</button>
-        {editId && <button type="button" onClick={() => { setEditId(null); setForm({ libro: '', usuario: '', texto: '' }); }}>Cancelar</button>}
+        {editId && (
+          <button type="button" onClick={() => {
+            setEditId(null);
+            setForm({ idLibro: '', idUsuario: '', comentario: '', calificacion: '5' });
+          }}>
+            Cancelar
+          </button>
+        )}
       </form>
+
       {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
       {success && <div style={{ color: 'green', marginBottom: 12 }}>{success}</div>}
+
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#f3f0ff' }}>
-            <th>Libro</th>
-            <th>Usuario</th>
-            <th>Texto</th>
+            <th>ID Libro</th>
+            <th>ID Usuario</th>
+            <th>Comentario</th>
+            <th>Calificación</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {resenas.map((r: any) => (
+          {resenas.map((r) => (
             <tr key={r.id}>
-              <td>{r.libro}</td>
-              <td>{r.usuario}</td>
-              <td>{r.texto}</td>
+              <td>{r.idLibro}</td>
+              <td>{r.idUsuario}</td>
+              <td>{r.comentario}</td>
+              <td>{r.calificacion}</td>
               <td>
-                <button onClick={() => handleEdit(r)} style={{ marginRight: 8, background: '#a78bfa', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer' }}>Editar</button>
-                <button onClick={() => handleDelete(r.id)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer' }}>Eliminar</button>
+                <button onClick={() => handleEdit(r)} style={{ marginRight: 8 }}>Editar</button>
+                <button onClick={() => handleDelete(r.id)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
       {loading && <div style={{ marginTop: 16 }}>Cargando...</div>}
     </div>
   );

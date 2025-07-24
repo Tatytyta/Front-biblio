@@ -314,15 +314,22 @@ export const estanteriasService = {
     apiRequest(`/estanterias/${id}`, 'DELETE'),
 };
 
+const ENDPOINT = '/resenas-libros';
+
 export const resenasService = {
-  getResenas: async () => apiRequest('/resenas'),
+  // GET /resenas-libros?page=1&limit=10
+  getResenas: async () => apiRequest(`${ENDPOINT}?page=1&limit=10`),
 
+  // POST /resenas-libros
+  // Body: { idLibro, idUsuario, calificacion, comentario }
   createResena: async (resena: any) =>
-    apiRequest('/resenas', 'POST', resena),
+    apiRequest(ENDPOINT, 'POST', resena),
 
+  // PUT /resenas-libros/:id
   updateResena: async (id: string, resena: any) =>
-    apiRequest(`/resenas/${id}`, 'PUT', resena),
+    apiRequest(`${ENDPOINT}/${id}`, 'PUT', resena),
 
+  // DELETE /resenas-libros/:id
   deleteResena: async (id: string) =>
-    apiRequest(`/resenas/${id}`, 'DELETE'),
+    apiRequest(`${ENDPOINT}/${id}`, 'DELETE'),
 };
