@@ -17,7 +17,7 @@ const Register: React.FC = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await api.auth.register({ username, email, password });
+      const res = await api.auth.register({ nombre: username, email, password });
       if (res && res.id) {
         setSuccess('Registro exitoso. Ahora puedes iniciar sesión.');
         setTimeout(() => navigate('/login'), 1500);
